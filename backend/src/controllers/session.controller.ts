@@ -4,7 +4,8 @@ import {APIError} from "@utils/Error";
 import Roadmap from "@models/roadmap.model";
 import generatePDF from "@utils/pdf";
 import path from "path"
-import { v4 as uuidv4 } from 'uuid';
+import {parse, v4 as uuidv4} from 'uuid';
+import {parseInput, roadmapGenerate} from "@utils/agent.service";
 export const initateSession = async(req: Request, res: Response, next: NextFunction) => {
     //@ts-ignore
     const auth = req.auth;
@@ -65,10 +66,14 @@ export const finalize = async(req:Request,res:Response,next:NextFunction)=>{
             return next(new APIError("Invalid session id",401));
         }
         // backend request to api for ai res
+        const parsedData = parseInput(session.questionnaire!!.map(item => `ID: ${item.q_id}, Title: ${careerQuestions.get(item.q_id)}, Response: ${item.q_res}`).join('\n'))
        // create a roadmap
+        const roadmap = roadmapGenerate(parsedData)
+        console.log(roadmap)
+        console.log(parsedData);
        // initial video res which will be saved to our server
         await session.save();
-        res.status(200).json({success:true});
+        res.status(200).json({success:true,roadmap:roadmap});
     }
     catch(err){
         return next(new APIError("Internal Server error",500));
