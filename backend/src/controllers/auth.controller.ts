@@ -138,7 +138,7 @@ export const logout = async(req:Request,res:Response,next:NextFunction)=>{
     const _auth = req.auth;
 
     try {
-        const auth = await Auth.findById(_auth.userId);
+        const auth = await Auth.findById(_auth!!.userId);
         if(!auth){
             return next(new APIError("Invalid session please login again",401))
         }
